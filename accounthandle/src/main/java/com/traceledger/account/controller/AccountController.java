@@ -3,6 +3,7 @@ package com.traceledger.account.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import com.traceledger.account.model.Account;
 import com.traceledger.account.model.Transaction;
 import com.traceledger.account.service.AccountService;
@@ -20,8 +21,8 @@ public class AccountController {
     }
 
     @PostMapping("/transaction")
-    public ResponseEntity<Account> applyTransaction(@RequestBody Transaction tx) {
-        return ResponseEntity.ok(accountService.applyTransaction(tx));
+    public ResponseEntity<Account> applyTransaction(@RequestBody Transaction transaction) {
+        return ResponseEntity.ok(accountService.applyTransaction(transaction));
     }
 
     @GetMapping("/{id}/balance")
