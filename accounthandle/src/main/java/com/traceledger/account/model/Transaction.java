@@ -1,8 +1,9 @@
 package com.traceledger.account.model;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import java.time.LocalDateTime;
 
 @Entity
 public class Transaction {

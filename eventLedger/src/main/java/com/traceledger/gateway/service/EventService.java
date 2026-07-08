@@ -40,8 +40,7 @@ public class EventService {
 
             logger.warn("Duplicate Event Received : {}", event.getEventId());
 
-            return eventRepository
-                    .findById(event.getEventId())
+            return eventRepository.findById(event.getEventId())
                     .orElseThrow(() ->
                             new RuntimeException("Event already exists"));
         }
@@ -51,8 +50,7 @@ public class EventService {
         // Custom Metric
         meterRegistry.counter("events.created").increment();
 
-        logger.info(
-                "Event {} created successfully for Account {}",
+        logger.info("Event {} created successfully for Account {}",
                 savedEvent.getEventId(),
                 savedEvent.getAccountId());
 
