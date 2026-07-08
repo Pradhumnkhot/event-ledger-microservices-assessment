@@ -1,24 +1,63 @@
 # Event Ledger Microservices Assessment
 
-A production-ready Spring Boot microservices application that demonstrates event-driven financial transaction processing with service discovery, observability, resiliency, and REST-based communication.
+A production-ready Spring Boot microservices application that demonstrates event-driven financial transaction processing using REST APIs, Service Discovery, API Gateway, Observability, and Resiliency.
 
 ---
 
-# Project Overview
+# Architecture
 
-This project consists of three Spring Boot microservices:
+```
+                   +----------------------+
+                   |      API Gateway     |
+                   |      Port : 8085     |
+                   +----------+-----------+
+                              |
+               -------------------------------
+               |                             |
+               |                             |
+       +-------v-------+             +-------v--------+
+       | Event Ledger  |             | Account Service|
+       | Port : 8080   |             | Port : 8081    |
+       +-------+-------+             +-------+--------+
+               \                             /
+                \                           /
+                 \                         /
+                  +-----------------------+
+                  | Eureka Server (8761) |
+                  +-----------------------+
+```
 
-## 1. Event Ledger Service
+---
 
-Responsible for:
+# Microservices
 
-- Receiving financial transaction events
-- Validating incoming requests
-- Persisting event data
-- Forwarding transactions to the Account Service
-- Implementing observability and resiliency
+## 1. API Gateway
 
-Runs on:
+Responsibilities
+
+- Single entry point
+- Request Routing
+- Service Discovery Integration
+
+Runs on
+
+```
+http://localhost:8085
+```
+
+---
+
+## 2. Event Ledger Service
+
+Responsibilities
+
+- Accept financial events
+- Validate requests
+- Persist events
+- Forward transactions to Account Service
+- Implements Circuit Breaker
+
+Runs on
 
 ```
 http://localhost:8080
@@ -26,16 +65,16 @@ http://localhost:8080
 
 ---
 
-## 2. Account Service
+## 3. Account Service
 
-Responsible for:
+Responsibilities
 
-- Creating customer accounts
-- Maintaining account balances
-- Processing credit/debit transactions
-- Storing transaction history
+- Create Accounts
+- Maintain Balance
+- Process Credit/Debit Transactions
+- Store Transaction History
 
-Runs on:
+Runs on
 
 ```
 http://localhost:8081
@@ -43,15 +82,14 @@ http://localhost:8081
 
 ---
 
-## 3. Eureka Service Registry
+## 4. Eureka Service Registry
 
-Responsible for:
+Responsibilities
 
-- Service Discovery
 - Service Registration
-- Health Monitoring
+- Service Discovery
 
-Runs on:
+Runs on
 
 ```
 http://localhost:8761
@@ -63,12 +101,12 @@ http://localhost:8761
 
 - Java 17
 - Spring Boot 3.x
-- Spring Data JPA
-- Spring Web
-- MySQL
+- Spring Cloud Gateway
 - Spring Cloud Netflix Eureka
+- Spring Data JPA
 - Spring Boot Actuator
-- Resilience4j Circuit Breaker
+- Resilience4j
+- MySQL
 - Maven
 - REST APIs
 
@@ -79,6 +117,8 @@ http://localhost:8761
 ```
 event-ledger-microservices-assessment
 │
+├── api-gateway
+│
 ├── eventLedger
 │
 ├── accounthandle
@@ -88,32 +128,37 @@ event-ledger-microservices-assessment
 ├── database
 │   └── schema.sql
 │
-└── README.md
+├── README.md
+│
+└── .gitignore
 ```
 
 ---
 
 # Features
 
-- Event Processing
+- Event Driven Processing
 - Account Management
-- REST-based Microservice Communication
-- Service Discovery using Eureka
-- Spring Boot Actuator
-- Health Monitoring
-- Application Metrics
-- Structured Logging
+- API Gateway
+- Eureka Service Discovery
+- REST Communication
 - Global Exception Handling
 - Request Validation
-- Idempotent Event Processing
-- Resilience4j Circuit Breaker
+- Idempotency
+- Structured Logging
+- Trace ID Propagation
+- Spring Boot Actuator
+- Custom Metrics
+- Health Monitoring
+- Circuit Breaker
+- Retry Configuration
 - Production-ready Configuration
 
 ---
 
 # Database Setup
 
-Create the databases:
+Create the databases.
 
 ```sql
 CREATE DATABASE event_ledger_gateway;
@@ -121,13 +166,13 @@ CREATE DATABASE event_ledger_gateway;
 CREATE DATABASE account_service;
 ```
 
-Import the schema:
+Run
 
 ```
 database/schema.sql
 ```
 
-Update MySQL credentials inside:
+Update database credentials inside
 
 ```
 eventLedger/src/main/resources/application.properties
@@ -137,20 +182,20 @@ accounthandle/src/main/resources/application.properties
 
 ---
 
-# Service Startup Order
+# Start Services
 
-Start the applications in the following order:
+Start services in the following order.
 
-### 1. Eureka Service Registry
+### 1. Eureka Server
 
 ```
 service-register
 ```
 
-URL
+Port
 
 ```
-http://localhost:8761
+8761
 ```
 
 ---
@@ -161,33 +206,45 @@ http://localhost:8761
 accounthandle
 ```
 
-URL
+Port
 
 ```
-http://localhost:8081
+8081
 ```
 
 ---
 
-### 3. Event Ledger Service
+### 3. Event Ledger
 
 ```
 eventLedger
 ```
 
-URL
+Port
 
 ```
-http://localhost:8080
+8080
+```
+
+---
+
+### 4. API Gateway
+
+```
+api-gateway
+```
+
+Port
+
+```
+8085
 ```
 
 ---
 
 # REST APIs
 
-## Account Service
-
-### Create Account
+## Create Account
 
 ```
 POST /accounts/{accountId}
@@ -196,12 +253,12 @@ POST /accounts/{accountId}
 Example
 
 ```
-POST http://localhost:8081/accounts/ACC1001
+POST http://localhost:8085/accounts/ACC1001
 ```
 
 ---
 
-### Get Account Balance
+## Get Account Balance
 
 ```
 GET /accounts/{accountId}/balance
@@ -210,34 +267,12 @@ GET /accounts/{accountId}/balance
 Example
 
 ```
-GET http://localhost:8081/accounts/ACC1001/balance
+GET http://localhost:8085/accounts/ACC1001/balance
 ```
 
 ---
 
-### Apply Transaction
-
-```
-POST /accounts/transaction
-```
-
-Example Request
-
-```json
-{
-  "eventId": "EVT001",
-  "accountId": "ACC1001",
-  "type": "CREDIT",
-  "amount": 500,
-  "timestamp": "2026-07-08T10:30:00"
-}
-```
-
----
-
-## Event Ledger Service
-
-### Create Event
+## Create Event
 
 ```
 POST /events
@@ -246,10 +281,10 @@ POST /events
 Example
 
 ```
-POST http://localhost:8080/events
+POST http://localhost:8085/events
 ```
 
-Request Body
+Request
 
 ```json
 {
@@ -264,27 +299,9 @@ Request Body
 
 ---
 
-### Get Event by ID
-
-```
-GET /events/{eventId}
-```
-
----
-
-### Get Events by Account
-
-```
-GET /events/account/{accountId}
-```
-
----
-
 # Observability
 
-Spring Boot Actuator is enabled.
-
-Available endpoints:
+Spring Boot Actuator endpoints
 
 ```
 /actuator/health
@@ -294,13 +311,12 @@ Available endpoints:
 /actuator/metrics
 ```
 
-Additional Observability Features:
+Additional Features
 
 - Structured Logging
-- Trace ID Filter
+- Trace ID Propagation
 - Health Monitoring
-- Custom Metrics
-- Request Tracking
+- Application Metrics
 
 ---
 
@@ -308,32 +324,29 @@ Additional Observability Features:
 
 Implemented using Resilience4j.
 
-Features:
-
 - Circuit Breaker
+- Retry
 - Fallback Handling
-- Retry Configuration
-- Graceful Error Handling
 
 ---
 
-# Production-ready Features
+# Production Ready Features
 
-- Global Exception Handling
-- Bean Validation
+- API Gateway
 - Service Discovery
-- Health Checks
+- Centralized Routing
+- Bean Validation
+- Global Exception Handling
 - Structured Logging
-- Circuit Breaker
-- REST Communication
-- Idempotency Check
+- Idempotency
 - Configuration Externalization
+- REST Communication
 
 ---
 
 # Build
 
-For each microservice:
+For each microservice
 
 ```bash
 mvn clean install
@@ -352,13 +365,19 @@ mvn spring-boot:run
 # Future Enhancements
 
 - Kafka Integration
-- Docker Support
-- Kubernetes Deployment
+- Docker
+- Kubernetes
 - OpenTelemetry
+- Prometheus
+- Grafana
+- ELK Stack
 - Distributed Tracing
-- Prometheus & Grafana Monitoring
-- API Gateway
-- Centralized Logging (ELK)
+
+---
+
+# GitHub Repository
+
+https://github.com/Pradhumnkhot/event-ledger-microservices-assessment
 
 ---
 
@@ -366,6 +385,10 @@ mvn spring-boot:run
 
 **Pradyumna Dilip Khot**
 
-GitHub Repository:
+Email: pradyumnakhot@gmail.com
 
-https://github.com/Pradhumnkhot/event-ledger-microservices-assessment
+Phone: +91 7058861258
+
+GitHub
+
+https://github.com/Pradhumnkhot
